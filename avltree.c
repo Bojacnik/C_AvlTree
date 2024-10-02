@@ -2,10 +2,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-AvlNode* avl_create_node(const int data)
+Symtable_Node* avl_create_node(Symtable_Row* data)
 {
-    AvlNode* node = malloc(sizeof(AvlNode));
+    Symtable_Node* node = malloc(sizeof(Symtable_Node));
     node->data = data;
     node->left = NULL;
     node->right = NULL;
@@ -14,7 +15,7 @@ AvlNode* avl_create_node(const int data)
     return node;
 }
 
-int height(const AvlNode* root)
+int height(const Symtable_Node* root)
 {
     if (root == NULL)
     {
@@ -29,7 +30,7 @@ int max(const int a, const int b)
     return a > b ? a : b;
 }
 
-int get_balance(const AvlNode* root)
+int get_balance(const Symtable_Node* root)
 {
     if (root == NULL)
     {
@@ -39,10 +40,10 @@ int get_balance(const AvlNode* root)
     return height(root->left) - height(root->right);
 }
 
-AvlNode* right_rotate(AvlNode* y)
+Symtable_Node* right_rotate(Symtable_Node* y)
 {
-    AvlNode* x = y->left;
-    AvlNode* T2 = x->right;
+    Symtable_Node* x = y->left;
+    Symtable_Node* T2 = x->right;
 
     x->right = y;
     y->left = T2;
@@ -53,10 +54,10 @@ AvlNode* right_rotate(AvlNode* y)
     return x;
 }
 
-AvlNode* left_rotate(AvlNode* x)
+Symtable_Node* left_rotate(Symtable_Node* x)
 {
-    AvlNode* y = x->right;
-    AvlNode* T2 = y->left;
+    Symtable_Node* y = x->right;
+    Symtable_Node* T2 = y->left;
 
     y->left = x;
     x->right = T2;
@@ -67,18 +68,18 @@ AvlNode* left_rotate(AvlNode* x)
     return y;
 }
 
-AvlNode* avl_insert_avltree(AvlNode* root, const int data)
+Symtable_Node* avl_insert_avltree(Symtable_Node* root, Symtable_Row* data)
 {
     if (root == NULL)
     {
         return avl_create_node(data);
     }
 
-    if (data < root->data)
+    if (!avl_compare(data, root))
     {
         root->left = avl_insert_avltree(root->left, data);
     }
-    else if (data > root->data)
+    else if (avl_compare(data, root))
     {
         root->right = avl_insert_avltree(root->right, data);
     }
@@ -91,24 +92,28 @@ AvlNode* avl_insert_avltree(AvlNode* root, const int data)
 
     const int balance = get_balance(root);
 
-    if (balance > 1 && data < root->left->data)
+    if (balance > 1 && !avl_compare(data, root))
     {
+
         return right_rotate(root);
     }
 
-    if (balance < -1 && data > root->right->data)
+    if (balance < -1 && avl_compare(data, root->right))
     {
+
         return left_rotate(root);
     }
 
-    if (balance > 1 && data > root->left->data)
+    if (balance > 1 && avl_compare(data, root->left))
     {
+
         root->left = left_rotate(root->left);
         return right_rotate(root);
     }
 
-    if (balance < -1 && data < root->right->data)
+    if (balance < -1 && !avl_compare(data, root->left))
     {
+
         root->right = right_rotate(root->right);
         return left_rotate(root);
     }
@@ -116,26 +121,26 @@ AvlNode* avl_insert_avltree(AvlNode* root, const int data)
     return root;
 }
 
-AvlNode* avl_find_avltree(const AvlNode* root, const int data)
+Symtable_Node* avl_find_avltree(Symtable_Node* root, Symtable_Row* data)
 {
     if (root == NULL)
     {
         return NULL;
     }
 
-    if (data < root->data)
+    if (!avl_compare(data, root))
     {
         return avl_find_avltree(root->left, data);
     }
-    if (data > root->data)
+    if (avl_compare(data, root))
     {
         return avl_find_avltree(root->right, data);
     }
 
-    return (AvlNode*)root;
+    return (Symtable_Node*)root;
 }
 
-void avl_print_inorder(const AvlNode* root)
+void avl_print_inorder(const Symtable_Node* root)
 {
     if (root == NULL)
     {
@@ -143,11 +148,11 @@ void avl_print_inorder(const AvlNode* root)
     }
 
     avl_print_inorder(root->left);
-    printf("%d ", root->data);
+    printf("%s ", root->data->identifier);
     avl_print_inorder(root->right);
 }
 
-void avl_print_postorder(const AvlNode* root)
+void avl_print_postorder(const Symtable_Node* root)
 {
     if (root == NULL)
     {
@@ -155,18 +160,36 @@ void avl_print_postorder(const AvlNode* root)
     }
 
     avl_print_postorder(root->right);
-    printf("%d ", root->data);
+    printf("%s ", root->data->identifier);
     avl_print_postorder(root->left);
 }
 
-void avl_print_preorder(const AvlNode* root)
+void avl_print_preorder(const Symtable_Node* root)
 {
     if (root == NULL)
     {
         return;
     }
 
-    printf("%d ", root->data);
+    printf("%s ", root->data->identifier);
     avl_print_preorder(root->left);
     avl_print_preorder(root->right);
+}
+
+Symtable_Row* avl_create_row(char* name) {
+    Symtable_Row* row = malloc(sizeof(Symtable_Row));
+    if(row == NULL) return NULL; //suicide
+    row->identifier = name;
+
+    return row;
+}
+
+//returns 1 when r1 is bigger and 0 when r2 is bigger
+int avl_compare(Symtable_Row* r1, Symtable_Node* r2){
+    if(r2 == NULL) return 0;
+
+    if (strcmp(r1->identifier, r2->data->identifier) > 0){
+     return 1;
+    }
+    else return 0;
 }
