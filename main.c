@@ -15,6 +15,14 @@ int main(void) {
     avl_insert_avltree(root, avl_create_row("babis"));
     avl_insert_avltree(root, avl_create_row("joever"));
 
+    if(avl_find_avltree(root, "babis")) { // succeeds
+        puts("found babis");
+    }
+    if(avl_find_avltree(root, "kokot")) { //fails
+        puts("found kokot");
+    }
+
+
     avl_print_inorder(root);
     puts("");
     avl_print_postorder(root);
