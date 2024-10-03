@@ -75,16 +75,17 @@ Symtable_Node* avl_insert_avltree(Symtable_Node* root, Symtable_Row* data)
         return avl_create_node(data);
     }
 
-    if (!avl_compare(data, root))
+    if (avl_compare(data, root) < 0)
     {
         root->left = avl_insert_avltree(root->left, data);
     }
-    else if (avl_compare(data, root))
+    else if (avl_compare(data, root) > 0)
     {
         root->right = avl_insert_avltree(root->right, data);
     }
     else
     {
+        //TODO: should throw some error or do a rename because of same name
         return root;
     }
 
@@ -92,26 +93,26 @@ Symtable_Node* avl_insert_avltree(Symtable_Node* root, Symtable_Row* data)
 
     const int balance = get_balance(root);
 
-    if (balance > 1 && !avl_compare(data, root))
+    if (balance > 1 && avl_compare(data, root) < 0)
     {
 
         return right_rotate(root);
     }
 
-    if (balance < -1 && avl_compare(data, root->right))
+    if (balance < -1 && avl_compare(data, root->right) > 0)
     {
 
         return left_rotate(root);
     }
 
-    if (balance > 1 && avl_compare(data, root->left))
+    if (balance > 1 && avl_compare(data, root->left) > 0)
     {
 
         root->left = left_rotate(root->left);
         return right_rotate(root);
     }
 
-    if (balance < -1 && !avl_compare(data, root->left))
+    if (balance < -1 && avl_compare(data, root->left) < 0)
     {
 
         root->right = right_rotate(root->right);
@@ -121,18 +122,18 @@ Symtable_Node* avl_insert_avltree(Symtable_Node* root, Symtable_Row* data)
     return root;
 }
 
-Symtable_Node* avl_find_avltree(Symtable_Node* root, Symtable_Row* data)
+Symtable_Node* avl_find_avltree(Symtable_Node* root, char* data)
 {
     if (root == NULL)
     {
         return NULL;
     }
 
-    if (!avl_compare(data, root))
+    if (avl_compare_string(data, root) < 0)
     {
         return avl_find_avltree(root->left, data);
     }
-    if (avl_compare(data, root))
+    if (avl_compare_string(data, root) > 0)
     {
         return avl_find_avltree(root->right, data);
     }
@@ -184,12 +185,15 @@ Symtable_Row* avl_create_row(char* name) {
     return row;
 }
 
-//returns 1 when r1 is bigger and 0 when r2 is bigger
 int avl_compare(Symtable_Row* r1, Symtable_Node* r2){
-    if(r2 == NULL) return 0;
+    if(r2 == NULL) return -1;
 
-    if (strcmp(r1->identifier, r2->data->identifier) > 0){
-     return 1;
-    }
-    else return 0;
+    int temp = strcmp(r1->identifier, r2->data->identifier);
+    return temp;
+}
+int avl_compare_string(char* r1, Symtable_Node* r2){
+    if(r2 == NULL) return -1;
+
+    int temp = strcmp(r1, r2->data->identifier);
+    return temp;
 }
